@@ -20,10 +20,10 @@ jobs:
           ]
     runs-on: macos-${{ matrix.list.os_ver }}
     env:
-      ONNX_VERSION: v1.19.2
-      ONNX_PKG_NAME: onnxruntime-v1.19.2-macos-${{ matrix.list.os_ver }}-static
-      CV_VERSION: 4.10.0
-      CV_PKG_NAME: opencv-4.10.0-macos-${{ matrix.list.os_ver }}-arm64
+      ONNX_VERSION: onnxruntime-v1.19.2
+      ONNX_PKG_NAME: onnxruntime-v1.19.2-macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-static
+      CV_VERSION: opencv-4.10.0
+      CV_PKG_NAME: opencv-4.10.0-macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}
 
     steps:
       # 检出代码
@@ -56,19 +56,19 @@ jobs:
       # 使用7z压缩
       - name: 7zip
         run: |
-          mkdir macos-${{ matrix.list.os_ver }}-bin
-          cp run-benchmark.sh macos-${{ matrix.list.os_ver }}-bin/run-benchmark.sh
-          cp run-test.sh macos-${{ matrix.list.os_ver }}-bin/run-test.sh
-          cp -r images macos-${{ matrix.list.os_ver }}-bin/images
-          mv Darwin-BIN/install/bin macos-${{ matrix.list.os_ver }}-bin/Darwin-BIN
-          7z a macos-${{ matrix.list.os_ver }}-bin.7z macos-${{ matrix.list.os_ver }}-bin
+          mkdir macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
+          cp run-benchmark.sh macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/run-benchmark.sh
+          cp run-test.sh macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/run-test.sh
+          cp -r images macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/images
+          mv Darwin-BIN/install/bin macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/Darwin-BIN
+          7z a macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin.7z macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
 
       # 上传artifact
       - name: upload
         uses: actions/upload-artifact@v3
         with:
-          name: macos-${{ matrix.list.os_ver }}-bin
-          path: macos-${{ matrix.list.os_ver }}-bin.7z
+          name: macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
+          path: macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin.7z
 
       - name: Create release and upload-archive
         uses: ncipollo/release-action@v1
