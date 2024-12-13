@@ -1,4 +1,4 @@
-name: Ubuntu
+name: Macos
 
 on:
   workflow_dispatch:
@@ -7,28 +7,20 @@ on:
       - '*'
 
 jobs:
-  ubuntu2204:
-    runs-on: ubuntu-22.04
+  macos:
     strategy:
       fail-fast: false
       matrix:
-        os_name: [ubuntu]
         list:
-          - { os_ver: 22.04, os_id: jammy }
+          - { os_ver: 13}
         arch:
-          [
-            amd64,
-            arm64,
-          ]
-    name: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}
-    container:
-      image: ${{ matrix.arch == 'amd64' && 'ubuntu:22.04' || 'arm64v8/ubuntu:22.04' }}
-
+          [ x86_64 ]
+    runs-on: macos-14
     env:
       ONNX_VERSION: 1.19.2
-      ONNX_PKG_NAME: onnxruntime-v1.19.2-ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-static
+      ONNX_PKG_NAME: onnxruntime-v1.19.2-macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-static
       CV_VERSION: 4.10.0
-      CV_PKG_NAME: opencv-4.10.0-ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}
+      CV_PKG_NAME: opencv-4.10.0-macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}
 
     steps:
       # 检出代码
@@ -44,7 +36,7 @@ jobs:
           cd onnxruntime-static
           wget https://github.com/RapidAI/OnnxruntimeBuilder/releases/download/${{ env.ONNX_VERSION }}/${{ env.ONNX_PKG_NAME }}.7z -O ${{ env.ONNX_PKG_NAME }}.7z
           7z x ${{ env.ONNX_PKG_NAME }}.7z -aoa
-          mv ${{ env.ONNX_PKG_NAME }} linux
+          mv ${{ env.ONNX_PKG_NAME }} macos
 
       # 下载opencv-static
       - name: download opencv-static
@@ -52,7 +44,7 @@ jobs:
           cd opencv-static
           wget https://github.com/RapidAI/OpenCVBuilder/releases/download/${{ env.CV_VERSION }}/${{ env.CV_PKG_NAME }}.7z -O ${{ env.CV_PKG_NAME }}.7z
           7z x ${{ env.CV_PKG_NAME }}.7z -aoa
-          mv ${{ env.CV_PKG_NAME }} linux
+          mv ${{ env.CV_PKG_NAME }} macos
 
       # 编译
       - name: build
@@ -62,25 +54,25 @@ jobs:
       # 使用7z压缩
       - name: 7zip
         run: |
-          mkdir ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
-          cp run-benchmark.sh ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/run-benchmark.sh
-          cp run-test.sh ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/run-test.sh
-          cp -r images ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/images
-          mv Linux-BIN/install/bin ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/Linux-BIN
-          7z a ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin.7z ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
+          mkdir macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
+          cp run-benchmark.sh macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/run-benchmark.sh
+          cp run-test.sh macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/run-test.sh
+          cp -r images macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/images
+          mv Darwin-BIN/install/bin macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/Darwin-BIN
+          7z a macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin.7z macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
 
       # 上传artifact
       - name: upload
         uses: actions/upload-artifact@v3
         with:
-          name: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
-          path: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin.7z
+          name: macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
+          path: macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin.7z
 
       - name: Create release and upload-archive
         uses: ncipollo/release-action@v1
         with:
           prerelease: false
-          artifacts: 'ubuntu-*.7z'
+          artifacts: 'macos-*.7z'
           allowUpdates: true
           artifactContentType: application/x-7z-compressed
           token: ${{ secrets.GITHUB_TOKEN }}
