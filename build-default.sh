@@ -4,7 +4,7 @@ sysOS=$(uname -s)
 NUM_THREADS=1
 if [ $sysOS == "Darwin" ]; then
   #echo "I'm MacOS"
-  NUM_THREADS=$(sysctl -n hw.nCPU)
+  NUM_THREADS=$(sysctl -n hw.ncpu)
 elif [ $sysOS == "Linux" ]; then
   #echo "I'm Linux"
   NUM_THREADS=$(grep ^processor /proc/cpuinfo | wc -l)

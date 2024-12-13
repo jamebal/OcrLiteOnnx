@@ -18,7 +18,7 @@ jobs:
             x86_64,
             arm64,
           ]
-    runs-on: macos-${{ matrix.list.os_ver }}
+    runs-on: macos-14
     env:
       ONNX_VERSION: 1.19.2
       ONNX_PKG_NAME: onnxruntime-v1.19.2-macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-static
@@ -29,10 +29,9 @@ jobs:
       # 检出代码
       - uses: actions/checkout@v3
 
-      # 安装openmp
-      - name: install openmp
+      - name: Check system architecture
         run: |
-          brew install libomp
+          echo "System Architecture: $(uname -m)"
 
       # 下载onnxruntime-static
       - name: download onnxruntime-static
