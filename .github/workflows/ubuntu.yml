@@ -32,11 +32,6 @@
           run: |
             echo "System Architecture: $(uname -m)"
 
-        - name: Install dependencies
-          run: |
-            apt-get update
-            apt-get install -y wget g++ p7zip-full cmake
-
         # 下载onnxruntime-static
         - name: download onnxruntime-static
           run: |
