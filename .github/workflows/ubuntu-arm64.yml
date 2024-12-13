@@ -34,9 +34,14 @@
           with:
             platforms: arm64
 
+        - name: Register binfmt support inside the container
+          run: |
+            docker run --privileged multiarch/qemu-user-static --reset -p yes
+            echo "System Architecture: $(uname -m)" # 确认架构
+
         - name: Check system architecture
           run: |
-            echo "System Architecture: $(uname -m)"
+            echo "System Architecture: $(dpkg --print-architecture)"
 
         - name: Install dependencies
           run: |
