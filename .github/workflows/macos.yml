@@ -22,7 +22,7 @@ jobs:
     env:
       ONNX_VERSION: 1.19.2
       ONNX_PKG_NAME: onnxruntime-v1.19.2-macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-static
-      CV_VERSION: opencv-4.10.0
+      CV_VERSION: 4.10.0
       CV_PKG_NAME: opencv-4.10.0-macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}
 
     steps:
