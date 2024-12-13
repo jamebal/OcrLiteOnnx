@@ -18,7 +18,6 @@
           arch:
             [ arm64 ]
       name: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}
-      container: arm64v8/ubuntu:latest
 
       env:
         ONNX_VERSION: 1.19.2
@@ -29,24 +28,9 @@
       steps:
         - uses: actions/checkout@v3
 
-        - name: Set up QEMU
-          uses: docker/setup-qemu-action@v2
-          with:
-            platforms: arm64
-
-        - name: Register binfmt support inside the container
-          run: |
-            docker run --privileged multiarch/qemu-user-static --reset -p yes
-            echo "System Architecture: $(uname -m)" # 确认架构
-
         - name: Check system architecture
           run: |
             echo "System Architecture: $(dpkg --print-architecture)"
-
-        - name: Install dependencies
-          run: |
-            apt-get update
-            apt-get install -y wget g++ p7zip-full cmake
 
         # 下载onnxruntime-static
         - name: download onnxruntime-static
