@@ -15,7 +15,7 @@ fi
 mkdir -p ${sysOS}-BIN
 pushd ${sysOS}-BIN
 cmake -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=Release -DOCR_OUTPUT="BIN" ..
-cmake --build . --config Release -j $NUM_THREADS
+cmake --build . --config Release -j 16
 cmake --build . --config Release --target install
 popd
 
