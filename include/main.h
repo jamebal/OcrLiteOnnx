@@ -18,6 +18,7 @@ static const struct option long_options[] = {
         {"unClipRatio",    required_argument, NULL, 'u'},
         {"doAngle",        required_argument, NULL, 'a'},
         {"mostAngle",      required_argument, NULL, 'A'},
+        {"outputResultImg",required_argument, NULL, 'O'},
         {"version",        no_argument,       NULL, 'v'},
         {"help",           no_argument,       NULL, 'h'},
         {"loopCount",      required_argument, NULL, 'l'},
@@ -27,7 +28,7 @@ static const struct option long_options[] = {
 const char *usageMsg = "(-d --models) (-1 --det) (-2 --cls) (-3 --rec) (-4 --keys) (-i --image)\n"\
                        "[-t --numThread] [-p --padding] [-s --maxSideLen]\n" \
                        "[-b --boxScoreThresh] [-o --boxThresh] [-u --unClipRatio]\n" \
-                       "[-a --noAngle] [-A --mostAngle]\n\n";
+                       "[-a --noAngle] [-A --mostAngle] [-O --outputResultImg]\n\n";
 
 const char *requiredMsg = "-d --models: models directory.\n" \
                           "-1 --det: model file name of det.\n" \
@@ -43,7 +44,8 @@ const char *optionalMsg = "-t --numThread: value of numThread(int), default: 4\n
                           "-o --boxThresh: value of boxThresh(float), default: 0.3\n" \
                           "-u --unClipRatio: value of unClipRatio(float), default: 2.0\n" \
                           "-a --doAngle: Enable(1)/Disable(0) Angle Net, default: Enable\n" \
-                          "-A --mostAngle: Enable(1)/Disable(0) Most Possible AngleIndex, default: Enable\n\n";
+                          "-A --mostAngle: Enable(1)/Disable(0) Most Possible AngleIndex, default: Enable\n\n"
+                          "-O --outputResultImg: Enable(1)/Disable(0) Output Result Image, default: Disable\n\n";
 
 const char *otherMsg = "-v --version: show version\n" \
                        "-h --help: print this help\n\n";

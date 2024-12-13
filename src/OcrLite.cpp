@@ -210,8 +210,8 @@ OcrResult OcrLite::detect(const char *path, const char *imgName,
 
     double endTime = getCurrentTime();
     double fullTime = endTime - startTime;
-    Logger("=====End detect=====\n");
     Logger("FullDetectTime(%fms)\n", fullTime);
+    Logger("=====End detect=====\n");
 
     //cropped to original size
     cv::Mat rgbBoxImg, textBoxImg;

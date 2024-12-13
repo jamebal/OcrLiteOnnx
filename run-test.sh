@@ -36,10 +36,11 @@ fi
 --keys keys.txt \
 --image $TARGET_IMG \
 --numThread $NUM_THREADS \
---padding 50 \
+--padding 0 \
 --maxSideLen 1024 \
 --boxScoreThresh 0.6 \
 --boxThresh 0.3 \
 --unClipRatio 2.0 \
 --doAngle 1 \
---mostAngle 1
+--mostAngle 1 \
+--outputResultImg 1

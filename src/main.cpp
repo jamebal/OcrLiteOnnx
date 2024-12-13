@@ -43,10 +43,11 @@ int main(int argc, char **argv) {
     int flagDoAngle = 1;
     bool mostAngle = true;
     int flagMostAngle = 1;
-
+    bool outputResultImg = false;
+    int flagIsOutputResultImg = 0;
     int opt;
     int optionIndex = 0;
-    while ((opt = getopt_long(argc, argv, "d:1:2:3:4:i:t:p:s:b:o:u:a:A:v:h", long_options, &optionIndex)) != -1) {
+    while ((opt = getopt_long(argc, argv, "d:1:2:3:4:i:t:p:s:b:o:u:a:A:O:v:h", long_options, &optionIndex)) != -1) {
         //printf("option(-%c)=%s\n", opt, optarg);
         switch (opt) {
             case 'd':
@@ -77,27 +78,21 @@ int main(int argc, char **argv) {
                 break;
             case 't':
                 numThread = (int) strtol(optarg, NULL, 10);
-                //printf("numThread=%d\n", numThread);
                 break;
             case 'p':
                 padding = (int) strtol(optarg, NULL, 10);
-                //printf("padding=%d\n", padding);
                 break;
             case 's':
                 maxSideLen = (int) strtol(optarg, NULL, 10);
-                //printf("maxSideLen=%d\n", maxSideLen);
                 break;
             case 'b':
                 boxScoreThresh = strtof(optarg, NULL);
-                //printf("boxScoreThresh=%f\n", boxScoreThresh);
                 break;
             case 'o':
                 boxThresh = strtof(optarg, NULL);
-                //printf("boxThresh=%f\n", boxThresh);
                 break;
             case 'u':
                 unClipRatio = strtof(optarg, NULL);
-                //printf("unClipRatio=%f\n", unClipRatio);
                 break;
             case 'a':
                 flagDoAngle = (int) strtol(optarg, NULL, 10);
@@ -106,7 +101,6 @@ int main(int argc, char **argv) {
                 } else {
                     doAngle = true;
                 }
-                //printf("doAngle=%d\n", doAngle);
                 break;
             case 'A':
                 flagMostAngle = (int) strtol(optarg, NULL, 10);
@@ -115,7 +109,14 @@ int main(int argc, char **argv) {
                 } else {
                     mostAngle = true;
                 }
-                //printf("mostAngle=%d\n", mostAngle);
+                break;
+            case 'O':
+                flagIsOutputResultImg = (int) strtol(optarg, NULL, 10);
+                if (flagIsOutputResultImg) {
+                    outputResultImg = true;
+                } else {
+                    outputResultImg = false;
+                }
                 break;
             case 'v':
                 printf("%s\n", VERSION);
@@ -123,6 +124,7 @@ int main(int argc, char **argv) {
             case 'h':
                 printHelp(stdout, argv[0]);
                 return 0;
+            break;
             default:
                 printf("other option %c :%s\n", opt, optarg);
         }
@@ -164,23 +166,23 @@ int main(int argc, char **argv) {
         fprintf(stderr, "keys file not found: %s\n", keysPath.c_str());
         return -1;
     }
+
     OcrLite ocrLite;
     ocrLite.setNumThread(numThread);
     ocrLite.initLogger(
-            true,//isOutputConsole
+            outputResultImg,//isOutputConsole
             false,//isOutputPartImg
-            true);//isOutputResultImg
+            outputResultImg);//isOutputResultImg
 
-    ocrLite.enableResultTxt(imgDir.c_str(), imgName.c_str());
     ocrLite.Logger("=====Input Params=====\n");
     ocrLite.Logger(
-            "numThread(%d),padding(%d),maxSideLen(%d),boxScoreThresh(%f),boxThresh(%f),unClipRatio(%f),doAngle(%d),mostAngle(%d)\n",
-            numThread, padding, maxSideLen, boxScoreThresh, boxThresh, unClipRatio, doAngle, mostAngle);
+            "numThread(%d),padding(%d),maxSideLen(%d),boxScoreThresh(%f),boxThresh(%f),unClipRatio(%f),doAngle(%d),mostAngle(%d),outputResultImg(%d)\n",
+            numThread, padding, maxSideLen, boxScoreThresh, boxThresh, unClipRatio, doAngle, mostAngle, outputResultImg);
 
     ocrLite.initModels(modelDetPath, modelClsPath, modelRecPath, keysPath);
-
     OcrResult result = ocrLite.detect(imgDir.c_str(), imgName.c_str(), padding, maxSideLen,
                                       boxScoreThresh, boxThresh, unClipRatio, doAngle, mostAngle);
+    ocrLite.enableResultTxt(imgDir.c_str(), imgName.c_str());
     ocrLite.Logger("%s\n", result.strRes.c_str());
     return 0;
 }
