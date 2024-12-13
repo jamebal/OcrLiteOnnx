@@ -1,91 +1,85 @@
-name: Ubuntu
+  name: Ubuntu
 
-on:
-  workflow_dispatch:
-  push:
-    tags:
-      - '*'
+  on:
+    workflow_dispatch:
+    push:
+      tags:
+        - '*'
 
-jobs:
-  ubuntu2204:
-    runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        os_name: [ubuntu]
-        list:
-          - { os_ver: 22.04, os_id: jammy }
-        arch:
-          [
-            amd64,
-            arm64,
-          ]
-    name: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}
-    container:
-      image: ${{ matrix.arch == 'amd64' && 'ubuntu:latest' || 'arm64v8/ubuntu:latest' }}
+  jobs:
+    ubuntu2204:
+      runs-on: ubuntu-22.04
+      strategy:
+        fail-fast: false
+        matrix:
+          os_name: [ubuntu]
+          list:
+            - { os_ver: 22.04, os_id: jammy }
+          arch:
+            [ amd64, arm64 ]
+      name: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}
+      container: ${{ matrix.arch == 'amd64' && 'ubuntu:latest' || 'arm64v8/ubuntu:latest' }} # 保持原样，以便在容器内安装依赖
+      steps:
+        - uses: actions/checkout@v3
 
-    env:
-      ONNX_VERSION: 1.19.2
-      ONNX_PKG_NAME: onnxruntime-v1.19.2-ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-static
-      CV_VERSION: 4.10.0
-      CV_PKG_NAME: opencv-4.10.0-ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}
+        - name: Set up QEMU
+          if: matrix.arch == 'arm64' # 只在 arm64 需要 QEMU
+          uses: docker/setup-qemu-action@v2
+          with:
+            platforms: arm64
 
-    steps:
-      # 检出代码
-      - uses: actions/checkout@v3
+        - name: Check system architecture
+          run: |
+            echo "System Architecture: $(uname -m)"
 
-      - name: Check system architecture
-        run: |
-          echo "System Architecture: $(uname -m)"
+        - name: Install dependencies
+          run: |
+            apt-get update
+            apt-get install -y wget g++ p7zip-full cmake
 
-      - name: Install dependencies
-        run: |
-          apt-get update
-          apt-get install -y wget g++ p7zip-full
+        # 下载onnxruntime-static
+        - name: download onnxruntime-static
+          run: |
+            cd onnxruntime-static
+            wget https://github.com/RapidAI/OnnxruntimeBuilder/releases/download/${{ env.ONNX_VERSION }}/${{ env.ONNX_PKG_NAME }}.7z -O ${{ env.ONNX_PKG_NAME }}.7z
+            7z x ${{ env.ONNX_PKG_NAME }}.7z -aoa
+            mv ${{ env.ONNX_PKG_NAME }} linux
 
-      # 下载onnxruntime-static
-      - name: download onnxruntime-static
-        run: |
-          cd onnxruntime-static
-          wget https://github.com/RapidAI/OnnxruntimeBuilder/releases/download/${{ env.ONNX_VERSION }}/${{ env.ONNX_PKG_NAME }}.7z -O ${{ env.ONNX_PKG_NAME }}.7z
-          7z x ${{ env.ONNX_PKG_NAME }}.7z -aoa
-          mv ${{ env.ONNX_PKG_NAME }} linux
+        # 下载opencv-static
+        - name: download opencv-static
+          run: |
+            cd opencv-static
+            wget https://github.com/RapidAI/OpenCVBuilder/releases/download/${{ env.CV_VERSION }}/${{ env.CV_PKG_NAME }}.7z -O ${{ env.CV_PKG_NAME }}.7z
+            7z x ${{ env.CV_PKG_NAME }}.7z -aoa
+            mv ${{ env.CV_PKG_NAME }} linux
 
-      # 下载opencv-static
-      - name: download opencv-static
-        run: |
-          cd opencv-static
-          wget https://github.com/RapidAI/OpenCVBuilder/releases/download/${{ env.CV_VERSION }}/${{ env.CV_PKG_NAME }}.7z -O ${{ env.CV_PKG_NAME }}.7z
-          7z x ${{ env.CV_PKG_NAME }}.7z -aoa
-          mv ${{ env.CV_PKG_NAME }} linux
+        # 编译
+        - name: build
+          run: |
+            chmod a+x build-default.sh &&./build-default.sh
 
-      # 编译
-      - name: build
-        run: |
-          chmod a+x build-default.sh &&./build-default.sh
+        # 使用7z压缩
+        - name: 7zip
+          run: |
+            mkdir ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
+            cp run-benchmark.sh ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/run-benchmark.sh
+            cp run-test.sh ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/run-test.sh
+            cp -r images ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/images
+            mv Linux-BIN/install/bin ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/Linux-BIN
+            7z a ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin.7z ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
 
-      # 使用7z压缩
-      - name: 7zip
-        run: |
-          mkdir ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
-          cp run-benchmark.sh ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/run-benchmark.sh
-          cp run-test.sh ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/run-test.sh
-          cp -r images ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/images
-          mv Linux-BIN/install/bin ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/Linux-BIN
-          7z a ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin.7z ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
+        # 上传artifact
+        - name: upload
+          uses: actions/upload-artifact@v3
+          with:
+            name: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
+            path: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin.7z
 
-      # 上传artifact
-      - name: upload
-        uses: actions/upload-artifact@v3
-        with:
-          name: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
-          path: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin.7z
-
-      - name: Create release and upload-archive
-        uses: ncipollo/release-action@v1
-        with:
-          prerelease: false
-          artifacts: 'ubuntu-*.7z'
-          allowUpdates: true
-          artifactContentType: application/x-7z-compressed
-          token: ${{ secrets.GITHUB_TOKEN }}
+        - name: Create release and upload-archive
+          uses: ncipollo/release-action@v1
+          with:
+            prerelease: false
+            artifacts: 'ubuntu-*.7z'
+            allowUpdates: true
+            artifactContentType: application/x-7z-compressed
+            token: ${{ secrets.GITHUB_TOKEN }}
