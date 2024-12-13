@@ -20,7 +20,7 @@ jobs:
           ]
     runs-on: macos-${{ matrix.list.os_ver }}
     env:
-      ONNX_VERSION: onnxruntime-v1.19.2
+      ONNX_VERSION: 1.19.2
       ONNX_PKG_NAME: onnxruntime-v1.19.2-macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}-static
       CV_VERSION: opencv-4.10.0
       CV_PKG_NAME: opencv-4.10.0-macos-${{ matrix.list.os_ver }}-${{ matrix.arch }}
