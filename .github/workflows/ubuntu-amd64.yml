@@ -1,0 +1,69 @@
+  name: Ubuntu-amd64
+
+  on:
+    workflow_dispatch:
+    push:
+      tags:
+        - '*'
+
+  jobs:
+    ubuntu2204:
+      runs-on: ubuntu-22.04
+      strategy:
+        fail-fast: false
+        matrix:
+          os_name: [ubuntu]
+          list:
+            - { os_ver: 22.04, os_id: jammy }
+          arch:
+            [ amd64, arm64 ]
+      name: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}
+      steps:
+        - uses: actions/checkout@v3
+
+        # 下载onnxruntime-static
+        - name: download onnxruntime-static
+          run: |
+            cd onnxruntime-static
+            wget https://github.com/RapidAI/OnnxruntimeBuilder/releases/download/${{ env.ONNX_VERSION }}/${{ env.ONNX_PKG_NAME }}.7z -O ${{ env.ONNX_PKG_NAME }}.7z
+            7z x ${{ env.ONNX_PKG_NAME }}.7z -aoa
+            mv ${{ env.ONNX_PKG_NAME }} linux
+
+        # 下载opencv-static
+        - name: download opencv-static
+          run: |
+            cd opencv-static
+            wget https://github.com/RapidAI/OpenCVBuilder/releases/download/${{ env.CV_VERSION }}/${{ env.CV_PKG_NAME }}.7z -O ${{ env.CV_PKG_NAME }}.7z
+            7z x ${{ env.CV_PKG_NAME }}.7z -aoa
+            mv ${{ env.CV_PKG_NAME }} linux
+
+        # 编译
+        - name: build
+          run: |
+            chmod a+x build-default.sh &&./build-default.sh
+
+        # 使用7z压缩
+        - name: 7zip
+          run: |
+            mkdir ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
+            cp run-benchmark.sh ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/run-benchmark.sh
+            cp run-test.sh ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/run-test.sh
+            cp -r images ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/images
+            mv Linux-BIN/install/bin ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin/Linux-BIN
+            7z a ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin.7z ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
+
+        # 上传artifact
+        - name: upload
+          uses: actions/upload-artifact@v3
+          with:
+            name: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin
+            path: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-bin.7z
+
+        - name: Create release and upload-archive
+          uses: ncipollo/release-action@v1
+          with:
+            prerelease: false
+            artifacts: 'ubuntu-*.7z'
+            allowUpdates: true
+            artifactContentType: application/x-7z-compressed
+            token: ${{ secrets.GITHUB_TOKEN }}
