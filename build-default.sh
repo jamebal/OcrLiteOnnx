@@ -19,19 +19,3 @@ cmake --build . --config Release -j $NUM_THREADS
 cmake --build . --config Release --target install
 popd
 
-
-mkdir -p ${sysOS}-JNI
-pushd ${sysOS}-JNI
-cmake -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=Release -DOCR_OUTPUT="JNI" ..
-cmake --build . --config Release -j $NUM_THREADS
-cmake --build . --config Release --target install
-popd
-
-
-mkdir -p ${sysOS}-CLIB
-pushd ${sysOS}-CLIB
-cmake -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=Release -DOCR_OUTPUT="CLIB" ..
-cmake --build . --config Release -j $NUM_THREADS
-cmake --build . --config Release --target install
-popd
-
