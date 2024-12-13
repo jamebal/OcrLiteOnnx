@@ -38,6 +38,7 @@ jobs:
           cd onnxruntime-static
           wget https://github.com/RapidAI/OnnxruntimeBuilder/releases/download/${{ env.ONNX_VERSION }}/${{ env.ONNX_PKG_NAME }}.7z -O ${{ env.ONNX_PKG_NAME }}.7z
           7z x ${{ env.ONNX_PKG_NAME }}.7z -aoa
+          mv ${{ env.ONNX_PKG_NAME }} linux
 
       # 下载opencv-static
       - name: download opencv-static
@@ -45,6 +46,7 @@ jobs:
           cd opencv-static
           wget https://github.com/RapidAI/OpenCVBuilder/releases/download/${{ env.CV_VERSION }}/${{ env.CV_PKG_NAME }}.7z -O ${{ env.CV_PKG_NAME }}.7z
           7z x ${{ env.CV_PKG_NAME }}.7z -aoa
+          mv ${{ env.CV_PKG_NAME }} linux
 
       # 编译
       - name: build
