@@ -22,7 +22,7 @@ jobs:
           ]
     name: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}
     container:
-      image: ${{ matrix.arch == 'amd64' && 'ubuntu:22.04' || 'arm64v8/ubuntu:22.04' }}
+      image: ${{ matrix.arch == 'amd64' && 'ubuntu:latest' || 'arm64v8/ubuntu:latest' }}
 
     env:
       ONNX_VERSION: 1.19.2
