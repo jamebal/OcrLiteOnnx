@@ -31,17 +31,17 @@ void OcrLite::enableResultTxt(const char *path, const char *imgName) {
 
 bool OcrLite::initModels(const std::string &detPath, const std::string &clsPath,
                          const std::string &recPath, const std::string &keysPath) {
-    Logger("=====Init Models=====\n");
-    Logger("--- Init DbNet ---\n");
+    //Logger("=====Init Models=====\n");
+    //Logger("--- Init DbNet ---\n");
     dbNet.initModel(detPath);
 
-    Logger("--- Init AngleNet ---\n");
+    //Logger("--- Init AngleNet ---\n");
     angleNet.initModel(clsPath);
 
-    Logger("--- Init CrnnNet ---\n");
+    //Logger("--- Init CrnnNet ---\n");
     crnnNet.initModel(recPath, keysPath);
 
-    Logger("Init Models Success!\n");
+    //Logger("Init Models Success!\n");
     return true;
 }
 
@@ -146,29 +146,29 @@ OcrResult OcrLite::detect(const char *path, const char *imgName,
     double dbNetTime = endDbNetTime - startTime;
     Logger("dbNetTime(%fms)\n", dbNetTime);
 
-    for (size_t i = 0; i < textBoxes.size(); ++i) {
-        Logger("TextBox[%d](+padding)[score(%f),[x: %d, y: %d], [x: %d, y: %d], [x: %d, y: %d], [x: %d, y: %d]]\n", i,
-               textBoxes[i].score,
-               textBoxes[i].boxPoint[0].x, textBoxes[i].boxPoint[0].y,
-               textBoxes[i].boxPoint[1].x, textBoxes[i].boxPoint[1].y,
-               textBoxes[i].boxPoint[2].x, textBoxes[i].boxPoint[2].y,
-               textBoxes[i].boxPoint[3].x, textBoxes[i].boxPoint[3].y);
-    }
+    // for (size_t i = 0; i < textBoxes.size(); ++i) {
+    //     Logger("TextBox[%d](+padding)[score(%f),[x: %d, y: %d], [x: %d, y: %d], [x: %d, y: %d], [x: %d, y: %d]]\n", i,
+    //            textBoxes[i].score,
+    //            textBoxes[i].boxPoint[0].x, textBoxes[i].boxPoint[0].y,
+    //            textBoxes[i].boxPoint[1].x, textBoxes[i].boxPoint[1].y,
+    //            textBoxes[i].boxPoint[2].x, textBoxes[i].boxPoint[2].y,
+    //            textBoxes[i].boxPoint[3].x, textBoxes[i].boxPoint[3].y);
+    // }
 
-    Logger("---------- step: drawTextBoxes ----------\n");
+    //Logger("---------- step: drawTextBoxes ----------\n");
     drawTextBoxes(textBoxPaddingImg, textBoxes, thickness);
 
     //---------- getPartImages ----------
     std::vector<cv::Mat> partImages = getPartImages(src, textBoxes, path, imgName);
 
-    Logger("---------- step: angleNet getAngles ----------\n");
+    //Logger("---------- step: angleNet getAngles ----------\n");
     std::vector<Angle> angles;
     angles = angleNet.getAngles(partImages, path, imgName, doAngle, mostAngle);
 
     //Log Angles
-    for (size_t i = 0; i < angles.size(); ++i) {
-        Logger("angle[%d][index(%d), score(%f), time(%fms)]\n", i, angles[i].index, angles[i].score, angles[i].time);
-    }
+    // for (size_t i = 0; i < angles.size(); ++i) {
+    //     Logger("angle[%d][index(%d), score(%f), time(%fms)]\n", i, angles[i].index, angles[i].score, angles[i].time);
+    // }
 
     //Rotate partImgs
     for (size_t i = 0; i < partImages.size(); ++i) {
@@ -180,19 +180,19 @@ OcrResult OcrLite::detect(const char *path, const char *imgName,
     Logger("---------- step: crnnNet getTextLine ----------\n");
     std::vector<TextLine> textLines = crnnNet.getTextLines(partImages, path, imgName);
     //Log TextLines
-    for (size_t i = 0; i < textLines.size(); ++i) {
-        Logger("textLine[%d](%s)\n", i, textLines[i].text.c_str());
-        std::ostringstream txtScores;
-        for (size_t s = 0; s < textLines[i].charScores.size(); ++s) {
-            if (s == 0) {
-                txtScores << textLines[i].charScores[s];
-            } else {
-                txtScores << " ," << textLines[i].charScores[s];
-            }
-        }
-        Logger("textScores[%d]{%s}\n", i, std::string(txtScores.str()).c_str());
-        Logger("crnnTime[%d](%fms)\n", i, textLines[i].time);
-    }
+    // for (size_t i = 0; i < textLines.size(); ++i) {
+    //     Logger("textLine[%d](%s)\n", i, textLines[i].text.c_str());
+    //     std::ostringstream txtScores;
+    //     for (size_t s = 0; s < textLines[i].charScores.size(); ++s) {
+    //         if (s == 0) {
+    //             txtScores << textLines[i].charScores[s];
+    //         } else {
+    //             txtScores << " ," << textLines[i].charScores[s];
+    //         }
+    //     }
+    //     Logger("textScores[%d]{%s}\n", i, std::string(txtScores.str()).c_str());
+    //     Logger("crnnTime[%d](%fms)\n", i, textLines[i].time);
+    // }
 
     std::vector<TextBlock> textBlocks;
     for (size_t i = 0; i < textLines.size(); ++i) {

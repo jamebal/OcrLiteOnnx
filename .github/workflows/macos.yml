@@ -1,0 +1,80 @@
+name: Builder
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        list:
+          - { os_ver: 13}
+        arch:
+          [
+            x86_64,
+            arm64,
+          ]
+    runs-on: macos-${{ matrix.list.os_ver }}
+    env:
+      ONNX_VERSION: 1.19.2
+      ONNX_PKG_NAME: onnxruntime-1.19.2-${{ matrix.list.os_ver }}-static
+      CV_VERSION: 4.10.0
+      CV_PKG_NAME: opencv-4.10.0-${{ matrix.list.os_ver }}-arm64
+
+    steps:
+      # 检出代码
+      - uses: actions/checkout@v3
+
+      # 安装openmp
+      - name: install openmp
+        run: |
+          brew install libomp
+
+      # 下载onnxruntime-static
+      - name: download onnxruntime-static
+        run: |
+          cd onnxruntime-static
+          wget https://github.com/RapidAI/OnnxruntimeBuilder/releases/download/${{ env.ONNX_VERSION }}/${{ env.ONNX_PKG_NAME }}.7z -O ${{ env.ONNX_PKG_NAME }}.7z
+          7z x ${{ env.ONNX_PKG_NAME }}.7z -aoa
+
+      # 下载opencv-static
+      - name: download opencv-static
+        run: |
+          cd opencv-static
+          wget https://github.com/RapidAI/OpenCVBuilder/releases/download/${{ env.CV_VERSION }}/${{ env.CV_PKG_NAME }}.7z -O ${{ env.CV_PKG_NAME }}.7z
+          7z x ${{ env.CV_PKG_NAME }}.7z -aoa
+
+      # 编译
+      - name: build
+        run: |
+          chmod a+x build-default.sh &&./build-default.sh
+
+      # 使用7z压缩
+      - name: 7zip
+        run: |
+          mkdir macos-${{ matrix.list.os_ver }}-bin
+          cp run-benchmark.sh macos-${{ matrix.list.os_ver }}-bin/run-benchmark.sh
+          cp run-test.sh macos-${{ matrix.list.os_ver }}-bin/run-test.sh
+          cp -r images macos-${{ matrix.list.os_ver }}-bin/images
+          mv Darwin-BIN/install/bin macos-${{ matrix.list.os_ver }}-bin/Darwin-BIN
+          7z a macos-${{ matrix.list.os_ver }}-bin.7z macos-${{ matrix.list.os_ver }}-bin
+
+      # 上传artifact
+      - name: upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-${{ matrix.list.os_ver }}-bin
+          path: macos-${{ matrix.list.os_ver }}-bin.7z
+
+      - name: Create release and upload-archive
+        uses: ncipollo/release-action@v1
+        with:
+          prerelease: false
+          artifacts: 'macos-*.7z'
+          allowUpdates: true
+          artifactContentType: application/x-7z-compressed
+          token: ${{ secrets.GITHUB_TOKEN }}
