@@ -1,4 +1,4 @@
-name: Builder
+name: Macos
 
 on:
   workflow_dispatch:
@@ -20,10 +20,10 @@ jobs:
           ]
     runs-on: macos-${{ matrix.list.os_ver }}
     env:
-      ONNX_VERSION: 1.19.2
-      ONNX_PKG_NAME: onnxruntime-1.19.2-${{ matrix.list.os_ver }}-static
+      ONNX_VERSION: v1.19.2
+      ONNX_PKG_NAME: onnxruntime-v1.19.2-macos-${{ matrix.list.os_ver }}-static
       CV_VERSION: 4.10.0
-      CV_PKG_NAME: opencv-4.10.0-${{ matrix.list.os_ver }}-arm64
+      CV_PKG_NAME: opencv-4.10.0-macos-${{ matrix.list.os_ver }}-arm64
 
     steps:
       # 检出代码

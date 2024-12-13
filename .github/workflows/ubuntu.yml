@@ -1,4 +1,4 @@
-name: Builder
+name: Ubuntu
 
 on:
   workflow_dispatch:
@@ -23,8 +23,8 @@ jobs:
     name: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}
 
     env:
-      ONNX_VERSION: 1.19.2
-      ONNX_PKG_NAME: onnxruntime-1.19.2-ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-static
+      ONNX_VERSION: v1.19.2
+      ONNX_PKG_NAME: onnxruntime-v1.19.2-ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}-static
       CV_VERSION: 4.10.0
       CV_PKG_NAME: opencv-4.10.0-ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}
 
