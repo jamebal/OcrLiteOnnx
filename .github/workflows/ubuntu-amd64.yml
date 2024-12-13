@@ -16,7 +16,7 @@
           list:
             - { os_ver: 22.04, os_id: jammy }
           arch:
-            [ amd64, arm64 ]
+            [ amd64 ]
       name: ubuntu-${{ matrix.list.os_ver }}-${{ matrix.arch }}
       steps:
         - uses: actions/checkout@v3
